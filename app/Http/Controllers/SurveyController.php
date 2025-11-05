@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Answer;
+use App\Models\PerguruanTinggi;
 use App\Models\Question;
 use App\Models\Stage;
 use App\Models\TracerStudy;
@@ -19,9 +20,7 @@ class SurveyController extends Controller
 
     private function filterQuestions($stage_id, $allAnswers)
     {
-        return Question::where('stage_id', $stage_id)
-            ->orWhere('stage_id', $stage_id + 1)
-            ->orWhere('stage_id', $stage_id + 2)
+        return Question::whereIn('stage_id', [$stage_id, $stage_id + 1, $stage_id + 2])
             ->orderBy('id')
             ->get()
             ->filter(function ($q) use ($allAnswers) {
@@ -37,14 +36,11 @@ class SurveyController extends Controller
                     $expectedValue = $cond->parent_answer_value;
                     $op            = strtoupper(trim($cond->operator));
 
-                    // Kalau jawaban parent tidak ada
                     if (! isset($allAnswers[$parentId])) {
                         if (in_array($op, ['OR', 'ATAU', '||'])) {
-                            // OR yang tidak ada anggap false
                             $orResults[] = false;
                             continue;
                         }
-                        // AND/NOT tanpa jawaban → gagal
                         return false;
                     }
 
@@ -67,10 +63,8 @@ class SurveyController extends Controller
                     }
                 }
 
-                // Semua AND harus true
                 $andPass = empty($andResults) || ! in_array(false, $andResults);
 
-                // Minimal satu OR harus true (kalau ada)
                 $orPass = empty($orResults) || in_array(true, $orResults);
 
                 return $andPass && $orPass;
@@ -100,7 +94,6 @@ class SurveyController extends Controller
         $user_id = session('tracer_study_id');
 
         $questions = Question::all();
-            $total_pages = $questions->count();
         $allAnswers = $this->getUserAnswers($user_id);
         $questions  = $this->filterQuestions($stage_id, $allAnswers);
 
@@ -121,7 +114,7 @@ class SurveyController extends Controller
             ->where('question_id', $question->id)
             ->first();
 
-        return view('survey.stage.page', data: compact('stage', 'question', 'page', 'previousAnswer', 'total_pages'));
+        return view('survey.stage.page', data: compact('stage', 'question', 'page', 'previousAnswer'));
     }
 
     public function deleteAnswer(Request $request, $questionId, $stage_id, $page)
@@ -154,6 +147,14 @@ class SurveyController extends Controller
         ]);
 
         $user_id = session('tracer_study_id');
+        $question = Question::find($request->question_id);
+
+        if ($question && $question->type === 'perguruan_tinggi') {
+            $exists = PerguruanTinggi::where('nama', $request->answer)->exists();
+            if (! $exists) {
+                return back()->with('error', 'Perguruan tinggi tidak valid.');
+            }
+        }
 
         Answer::updateOrCreate(
             ['user_id' => $user_id, 'question_id' => $request->question_id],

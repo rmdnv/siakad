@@ -25,8 +25,8 @@ class AuthController extends Controller
 
         return match ($role) {
             Role::ALUMNI => $this->loginAlumni($request),
-            Role::ADMIN => $this->loginAdmin($request),
-            default => $this->invalidRole($role),
+            Role::ADMIN  => $this->loginAdmin($request),
+            default      => $this->invalidRole($role),
         };
     }
 
@@ -43,7 +43,7 @@ class AuthController extends Controller
 
         $alumni = DB::table('tracer_study')
             ->where('nisn', $request->nisn)
-            ->Orwhere('nis', $request->nisn)
+            ->orWhere('nis', $request->nisn)
             ->first();
 
         if ($alumni) {
@@ -52,10 +52,11 @@ class AuthController extends Controller
                 'tracer_study_id'   => $alumni->id,
                 'tracer_study_name' => $alumni->nama,
             ]);
+
             return redirect('/tracer-study/dashboard')->with('success', 'Login berhasil!');
         }
 
-        return redirect('/tracer-study#login')->withErrors(['siswa' => 'NIS/NISN tidak ditemukan.']);
+        return back()->with('error', 'NISN atau NIK tidak ditemukan.');
     }
 
     private function loginAdmin(Request $request)
@@ -67,7 +68,7 @@ class AuthController extends Controller
 
         $throttleKey = 'login:' . $request->ip();
         if (RateLimiter::tooManyAttempts($throttleKey, $this->maxAttempts)) {
-            return redirect('/tracer-study#login')->withErrors(['login' => "Terlalu banyak percobaan login."]);
+            return back()->with('error', 'Terlalu banyak percobaan login.');
         }
 
         $admin = DB::table('admins')->where('email', $request->email)->first();
@@ -86,7 +87,7 @@ class AuthController extends Controller
 
         RateLimiter::hit($throttleKey, $this->decayMinutes * 60);
 
-        return redirect('/tracer-study#login')->withErrors(['login' => 'Email atau password salah.']);
+        return back()->with('error', 'Email atau password salah.');
     }
 
     public function logout(Request $request)

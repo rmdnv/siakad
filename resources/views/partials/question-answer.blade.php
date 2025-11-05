@@ -35,7 +35,7 @@
                     </span>
                 @endforeach
             </div>
-        @elseif($question->type === 'text')
+        @else
             <input type="text" disabled class="mt-2 w-full border rounded-lg px-3 py-2"
                    value="{{ $answer->answer }}">
         @endif
