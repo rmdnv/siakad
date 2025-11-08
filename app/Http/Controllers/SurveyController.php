@@ -8,6 +8,9 @@ use App\Models\Question;
 use App\Models\Stage;
 use App\Models\TracerStudy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
 
 class SurveyController extends Controller
 {
@@ -88,20 +91,49 @@ class SurveyController extends Controller
         return $tracer->status;
     }
 
+    public function generateLink($stageId, $page = null)
+    {
+        $signedUrl = URL::temporarySignedRoute(
+            'survey.stage.page',
+            now()->addMinutes(60),
+            [
+                'stage_id' => $stageId,
+                'page' => $page,
+            ]
+        );
+
+        $encoded = base64_encode($signedUrl);
+
+        return redirect()->route('survey.access', ['token' => $encoded]);
+    }
+
+    public function access(Request $request)
+    {
+        $decoded = base64_decode($request->query('token'));
+
+        if (! $decoded || ! str_contains($decoded, 'signature=')) {
+            abort(403, 'Token tidak valid.');
+        }
+
+        return redirect($decoded);
+    }
+
     public function show($stage_id, $page = 1)
     {
         $stage   = Stage::findOrFail($stage_id);
         $user_id = session('tracer_study_id');
+        $total = Answer::where('user_id', $user_id)->count();
+        if ($page > ($total + 1)) {
+            return redirect()->route('survey.stage.page', ['stage_id' => $stage_id, 'page' => $total]);
+        }
 
         $questions = Question::all();
         $allAnswers = $this->getUserAnswers($user_id);
         $questions  = $this->filterQuestions($stage_id, $allAnswers);
-
         $status = $this->updateUserStatus($user_id, $questions);
         if ($status === "Selesai Mengisi") {
             return redirect('/tracer-study/survey/complete');
         }
-
         $question = $questions->skip($page - 1)->first();
         if (! $question) {
             $nextStage = Stage::where('id', '>', $stage_id)->orderBy('id')->first();
@@ -153,6 +185,46 @@ class SurveyController extends Controller
             $exists = PerguruanTinggi::where('nama', $request->answer)->exists();
             if (! $exists) {
                 return back()->with('error', 'Perguruan tinggi tidak valid.');
+            }
+        } elseif ($question && $question->type === 'prodi') {
+            $path = storage_path('app/data/prodi.json');
+            $data = json_decode(file_get_contents($path), true);
+            $input = strtolower($request->answer);
+            $valid = !empty(array_filter($data['prodi'], fn($p) => strtolower($p) == strtolower($input)));
+            if (!$valid) {
+                return back()->with('error', 'Prodi tidak valid.');
+            }
+        } elseif ($question && $question->type === 'provinsi') {
+            $data = Cache::remember('provinces', 86400, function () {
+                $response = Http::get('https://wilayah.id/api/provinces.json');
+                if ($response->successful()) {
+                    $json = $response->json();
+                    return collect($json['data'])->pluck('name')->toArray();
+                }
+                return [];
+            });
+
+            $input = strtolower(trim($request->answer));
+
+            $valid = collect($data)->first(fn($p) => strtolower($p) === $input);
+
+            if (! $valid) {
+                $closest = null;
+                $percent = 0;
+
+                foreach ($data as $prov) {
+                    similar_text($input, strtolower($prov), $sim);
+                    if ($sim > $percent) {
+                        $percent = $sim;
+                        $closest = $prov;
+                    }
+                }
+
+                if ($percent >= 70) {
+                    return back()->with('error', "Provinsi tidak valid. Mungkin maksud anda {$closest}?");
+                }
+
+                return back()->with('error', 'Provinsi tidak valid.');
             }
         }
 

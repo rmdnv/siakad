@@ -65,14 +65,45 @@
                     @elseif($question->type == 'perguruan_tinggi')
                     <label class="autocomplete-wrapper">
                         <div class="ghost-container">
-                            <span id="ghostBase"></span><span id="ghostText"></span>
+                            <span id="ghostBasePerguruanTinggi"></span><span id="ghostTextPerguruanTinggi"></span>
                         </div>
                         <input
                             type="text"
                             id="inputPerguruanTinggi"
+                            data-api="/api/perguruan-tinggi"
                             name="answer"
                             value="{{ optional($previousAnswer)->answer }}"
                             placeholder="Ketik nama perguruan tinggi..."
+                            autocomplete="off"
+                            class="input-autocomplete">
+                    </label>
+                    @elseif($question->type == 'prodi')
+                    <label class="autocomplete-wrapper">
+                        <div class="ghost-container">
+                            <span id="ghostBaseProdi"></span><span id="ghostTextProdi"></span>
+                        </div>
+                        <input
+                            type="text"
+                            id="inputProdi"
+                            data-api="/api/prodi"
+                            name="answer"
+                            value="{{ optional($previousAnswer)->answer }}"
+                            placeholder="Ketik prodi..."
+                            autocomplete="off"
+                            class="input-autocomplete">
+                    </label>
+                    @elseif($question->type == 'provinsi')
+                    <label class="autocomplete-wrapper">
+                        <div class="ghost-container">
+                            <span id="ghostBaseProvinsi"></span><span id="ghostTextProvinsi"></span>
+                        </div>
+                        <input
+                            type="text"
+                            id="inputProvinsi"
+                            data-api="/api/wilayah/provinsi"
+                            name="answer"
+                            value="{{ optional($previousAnswer)->answer }}"
+                            placeholder="Ketik provinsi..."
                             autocomplete="off"
                             class="input-autocomplete">
                     </label>
@@ -108,15 +139,26 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", async function() {
-            const input = document.getElementById("inputPerguruanTinggi");
-            const ghostBase = document.getElementById("ghostBase");
-            const ghostText = document.getElementById("ghostText");
+            const form = document.getElementById("submit-form");
+            const radios = document.querySelectorAll("input[type='radio'][name='answer']");
+            radios.forEach(radio => radio.addEventListener("change", () => form.submit()));
 
-            if (input) {
+            const inputs = document.querySelectorAll("input[data-api]");
+
+            for (const input of inputs) {
+                const apiUrl = input.dataset.api;
+                const baseId = input.id.replace("input", "ghostBase");
+                const textId = input.id.replace("input", "ghostText");
+                const ghostBase = document.getElementById(baseId);
+                const ghostText = document.getElementById(textId);
+
                 try {
-                    const res = await fetch("/api/perguruan-tinggi");
+                    const res = await fetch(apiUrl);
                     const data = await res.json();
-                    const list = data.map(pt => pt.nama);
+
+                    const list = Array.isArray(data) ?
+                        data.map(item => (typeof item === "string" ? item : item.nama)) :
+                        data.prodi || [];
 
                     input.addEventListener("input", () => {
                         const val = input.value;
@@ -124,12 +166,9 @@
                         const match = list.find(name => name.toLowerCase().startsWith(lowerVal));
 
                         ghostBase.textContent = val;
-
-                        if (val && match && match.toLowerCase() !== lowerVal) {
-                            ghostText.textContent = match.slice(val.length);
-                        } else {
-                            ghostText.textContent = "";
-                        }
+                        ghostText.textContent = val && match && match.toLowerCase() !== lowerVal ?
+                            match.slice(val.length) :
+                            "";
                     });
 
                     input.addEventListener("keydown", e => {
@@ -141,11 +180,12 @@
                         }
                     });
                 } catch (err) {
-                    console.error("Gagal memuat data universitas:", err);
+                    console.error(`Gagal memuat data dari ${apiUrl}:`, err);
                 }
             }
         });
     </script>
+
     <script>
         @if(session('error'))
         Toastify({

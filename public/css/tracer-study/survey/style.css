@@ -272,12 +272,30 @@ body {
     z-index: 999;
 }
 
-#ghostBase {
+#ghostBasePerguruanTinggi {
     color: #333;
     opacity: 0;
 }
 
-#ghostText {
+#ghostTextPerguruanTinggi {
+    color: #bbb;
+}
+
+#ghostBaseProdi {
+    color: #333;
+    opacity: 0;
+}
+
+#ghostTextProdi {
+    color: #bbb;
+}
+
+#ghostBaseProvinsi {
+    color: #333;
+    opacity: 0;
+}
+
+#ghostTextProvinsi {
     color: #bbb;
 }
 

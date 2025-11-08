@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('stage_id');
             $table->text('text');
-            $table->enum('type', ['radio', 'checkbox', 'text', 'nim', 'date', 'perguruan_tinggi'])->default('radio');
+            $table->enum('type', ['radio', 'checkbox', 'text', 'nim', 'date', 'perguruan_tinggi', 'prodi', 'provinsi'])->default('radio');
             $table->unsignedBigInteger('parent_question_id')->nullable();
             $table->string('parent_answer_value')->nullable();
             $table->timestamps();
