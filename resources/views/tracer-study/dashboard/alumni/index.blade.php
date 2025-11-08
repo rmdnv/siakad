@@ -32,7 +32,7 @@
             </div>
         </nav>
         <div class="judul">
-            <h2>SELAMAT DATANG,</h2>
+            <h2>{{ strtoupper(\App\Helpers\GeneralHelper::greeting())."," }}</h2>
             <h1>{{ \App\Helpers\NamaHelper::singkatNama(strtoupper(session()->has('admin_nama') ? session('admin_nama') : session('tracer_study_name'))) }}</h1>
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque dapibus velit ipsum, et scelerisque ligula pretium efficitur. Curabitur vitae feugiat nunc. Sed nec ligula nec tortor efficitur rutrum et dignissim mauris. Cras efficitur iaculis ullamcorper.</p>
             <a class="btn-mulai" href="{{ route("survey.stage.page", ['stage_id' => 1, 'page' => 1]) }}">Mulai Survey!</a>

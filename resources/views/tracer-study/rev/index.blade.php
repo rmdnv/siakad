@@ -21,7 +21,12 @@
     <section class="hero">
         <h1>Melacak Jejak, Menyongsong Masa Depan.</h1>
         <p>Tracer Study membantu sekolah memahami perjalanan alumni untuk meningkatkan kualitas pendidikan dan relevansi kompetensi kerja.</p>
-        <a href="#login">Mulai Survey <i class="fa-solid fa-arrow-right"></i></a>
+
+        @if(session()->has('tracer_study_id'))
+        <a href="{{ url('/tracer-study/dashboard') }}" class="btn">Lanjut Survey <i class="fa-solid fa-arrow-right"></i></a>
+        @else
+        <a href="#login" class="btn">Mulai Survey <i class="fa-solid fa-arrow-right"></i></a>
+        @endif
     </section>
 
     <!-- MAIN CONTENT -->
