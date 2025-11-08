@@ -2,50 +2,27 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class WilayahController extends Controller
 {
-    private string $baseUrl = 'https://wilayah.id/api';
-
     public function provinsi()
     {
         $data = Cache::remember('provinces', 86400, function () {
-        $response = Http::get('https://wilayah.id/api/provinces.json');
-        if ($response->successful()) {
-            $json = $response->json();
-            return collect($json['data'])->pluck('name')->toArray();
-        }
-        return [];
-    });
+            $json = Storage::disk('local')->get('data/provinsi.json');
+            return json_decode($json, true) ?: [];
+        });
 
-    return response()->json($data);
+        return response()->json($data);
     }
 
-    public function kabupaten($kodeProvinsi)
+    public function kabupaten()
     {
-        return response()->json(
-            Cache::remember("wilayah_kabupaten_{$kodeProvinsi}", 3600, function () use ($kodeProvinsi) {
-                return Http::get("{$this->baseUrl}/regencies/{$kodeProvinsi}.json")->json();
-            })
-        );
-    }
+        $data = Cache::remember('kabupaten', 86400, function () {
+            $json = Storage::disk('local')->get('data/kabupaten.json');
+            return json_decode($json, true) ?: [];
+        });
 
-    public function kecamatan($kodeKabupaten)
-    {
-        return response()->json(
-            Cache::remember("wilayah_kecamatan_{$kodeKabupaten}", 3600, function () use ($kodeKabupaten) {
-                return Http::get("{$this->baseUrl}/districts/{$kodeKabupaten}.json")->json();
-            })
-        );
-    }
-
-    public function kelurahan($kodeKecamatan)
-    {
-        return response()->json(
-            Cache::remember("wilayah_kelurahan_{$kodeKecamatan}", 3600, function () use ($kodeKecamatan) {
-                return Http::get("{$this->baseUrl}/villages/{$kodeKecamatan}.json")->json();
-            })
-        );
+        return response()->json($data);
     }
 }

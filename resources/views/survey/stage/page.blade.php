@@ -107,6 +107,21 @@
                             autocomplete="off"
                             class="input-autocomplete">
                     </label>
+                    @elseif($question->type == 'kabupaten')
+                    <label class="autocomplete-wrapper">
+                        <div class="ghost-container">
+                            <span id="ghostBaseKabupaten"></span><span id="ghostTextKabupaten"></span>
+                        </div>
+                        <input
+                            type="text"
+                            id="inputKabupaten"
+                            data-api="/api/wilayah/kabupaten"
+                            name="answer"
+                            value="{{ optional($previousAnswer)->answer }}"
+                            placeholder="Ketik kabupaten..."
+                            autocomplete="off"
+                            class="input-autocomplete">
+                    </label>
                     @elseif($question->type == 'nim')
                     <label class="option">
                         <input type="text" name="answer" pattern="\d{10}" value="{{ optional($previousAnswer)->answer }}" placeholder="Ketik nim di sini">

@@ -17,4 +17,36 @@ class GeneralHelper
             default => 'Selamat Malam',
         };
     }
+
+    public static function validateInput(string $input, array $data): array
+    {
+        $input = strtolower(trim($input));
+        $closest = null;
+
+        $valid = collect($data)->first(fn($p) => strtolower($p) === $input);
+
+        if ($valid) {
+            return ['valid' => true, 'closest' => null];
+        }
+
+        foreach ($data as $prov) {
+            if (stripos($prov, $input) !== false) {
+                $closest = $prov;
+                break;
+            }
+        }
+
+        if (! $closest) {
+            $percent = 0;
+            foreach ($data as $prov) {
+                similar_text($input, strtolower($prov), $sim);
+                if ($sim > $percent) {
+                    $percent = $sim;
+                    $closest = $prov;
+                }
+            }
+        }
+
+        return ['valid' => false, 'closest' => $closest];
+    }
 }

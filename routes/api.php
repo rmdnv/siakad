@@ -6,9 +6,7 @@ use App\Http\Controllers\WilayahController;
 
 Route::prefix('wilayah')->group(function () {
     Route::get('/provinsi', [WilayahController::class, 'provinsi']);
-    Route::get('/kabupaten/{kode}', [WilayahController::class, 'kabupaten']);
-    Route::get('/kecamatan/{kode}', [WilayahController::class, 'kecamatan']);
-    Route::get('/kelurahan/{kode}', [WilayahController::class, 'kelurahan']);
+    Route::get('/kabupaten', [WilayahController::class, 'kabupaten']);
 });
 
 Route::get('perguruan-tinggi', [PerguruanTinggiController::class, 'index']);

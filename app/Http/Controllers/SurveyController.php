@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\GeneralHelper;
 use App\Models\Answer;
 use App\Models\PerguruanTinggi;
 use App\Models\Question;
@@ -10,6 +11,7 @@ use App\Models\TracerStudy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 
 class SurveyController extends Controller
@@ -196,35 +198,28 @@ class SurveyController extends Controller
             }
         } elseif ($question && $question->type === 'provinsi') {
             $data = Cache::remember('provinces', 86400, function () {
-                $response = Http::get('https://wilayah.id/api/provinces.json');
-                if ($response->successful()) {
-                    $json = $response->json();
-                    return collect($json['data'])->pluck('name')->toArray();
-                }
-                return [];
+                $json = Storage::disk('local')->get('data/provinsi.json');
+                return json_decode($json, true) ?: [];
             });
 
             $input = strtolower(trim($request->answer));
 
-            $valid = collect($data)->first(fn($p) => strtolower($p) === $input);
+            $result = GeneralHelper::validateInput($input, $data);
 
-            if (! $valid) {
-                $closest = null;
-                $percent = 0;
+            if (!$result['valid']) {
+                return back()->with('error', "Provinsi tidak valid. Mungkin maksud anda {$result['closest']}?");
+            }
+        } elseif ($question && $question->type === 'kabupaten') {
+            $data = Cache::remember('kabupaten', 86400, function () {
+                $json = Storage::disk('local')->get('data/kabupaten.json');
+                return json_decode($json, true) ?: [];
+            });
 
-                foreach ($data as $prov) {
-                    similar_text($input, strtolower($prov), $sim);
-                    if ($sim > $percent) {
-                        $percent = $sim;
-                        $closest = $prov;
-                    }
-                }
+            $input = strtolower(trim($request->answer));
+            $result = GeneralHelper::validateInput($input, $data);
 
-                if ($percent >= 70) {
-                    return back()->with('error', "Provinsi tidak valid. Mungkin maksud anda {$closest}?");
-                }
-
-                return back()->with('error', 'Provinsi tidak valid.');
+            if (!$result['valid']) {
+                return back()->with('error', "Kabupaten tidak valid. Mungkin maksud anda {$result['closest']}?");
             }
         }
 

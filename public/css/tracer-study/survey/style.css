@@ -299,6 +299,15 @@ body {
     color: #bbb;
 }
 
+#ghostBaseKabupaten {
+    color: #333;
+    opacity: 0;
+}
+
+#ghostTextKabupaten {
+    color: #bbb;
+}
+
 .input-autocomplete {
     position: relative;
     z-index: 2;
