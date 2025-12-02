@@ -6,11 +6,7 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                'resources/css/tracer-study/style.css',
-                'resources/css/tracer-study/survey/style.css',
-                'resources/css/tracer-study/dashboard/style.css',
-                'resources/css/tracer-study/rev/style.css',
-                'resources/css/siakad/style.css',
+                'resources/css/app.css',
                 'resources/js/app.js'
             ],
             refresh: true,
