@@ -1,31 +1,11 @@
 {
-  "resources/css/siakad/style.css": {
-    "file": "assets/style-DvTPqasJ.css",
-    "src": "resources/css/siakad/style.css",
-    "isEntry": true
-  },
-  "resources/css/tracer-study/dashboard/style.css": {
-    "file": "assets/style-CFaVLX_9.css",
-    "src": "resources/css/tracer-study/dashboard/style.css",
-    "isEntry": true
-  },
-  "resources/css/tracer-study/rev/style.css": {
-    "file": "assets/style-DR9GVBL_.css",
-    "src": "resources/css/tracer-study/rev/style.css",
-    "isEntry": true
-  },
-  "resources/css/tracer-study/style.css": {
-    "file": "assets/style-_kB3oo4q.css",
-    "src": "resources/css/tracer-study/style.css",
-    "isEntry": true
-  },
-  "resources/css/tracer-study/survey/style.css": {
-    "file": "assets/style-W_ZpDO5x.css",
-    "src": "resources/css/tracer-study/survey/style.css",
+  "resources/css/app.css": {
+    "file": "assets/app-HGenovJ0.css",
+    "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-l0sNRNKZ.js",
+    "file": "assets/app-DXkBEYEe.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
